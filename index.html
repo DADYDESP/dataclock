@@ -1,0 +1,270 @@
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Análisis Matriz de Eventos</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/ml-kmeans@5.0.0/dist/ml-kmeans.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script type="importmap">
+        {
+            "imports": {
+                "xlsx": "https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js",
+                "ml-kmeans": "https://cdn.jsdelivr.net/npm/ml-kmeans@5.0.0/dist/ml-kmeans.min.js",
+                "jspdf": "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js",
+                "html2canvas": "https://html2canvas.hertzen.com/dist/html2canvas.min.js",
+                "chart.js": "https://cdn.jsdelivr.net/npm/chart.js"
+            }
+        }
+    </script>
+    <script type="module" src="config.js"></script>
+    <script type="module" src="app.js"></script>
+    <script type="module" src="export-utils.js"></script>
+    <script type="module" src="multi-select.js"></script>
+    <script type="module" src="loading-indicator.js"></script>
+    <script type="module" src="file-handler.js"></script>
+    <script type="module" src="aoristic-analysis.js"></script>
+</head>
+<body>
+    <header>
+        <div class="logo-container">
+            <img src="LOGO-REDONDO.png" alt="SIAC logo" class="logo-image">
+        </div>
+        <div class="title-container">
+            <h1>Análisis de Matriz de Eventos</h1>
+            <p class="subtitle"><h3>Data Clock</h3></p>
+        </div>
+    </header>
+<section class="help-section">
+            <div class="user-guide-container">
+                <button id="userGuideButton" class="btn guide-btn">Descargar Manual de Usuario</button>
+                <p class="guide-info">Descargue la documentación completa sobre el funcionamiento del sistema.</p>
+            </div>
+        </section>
+    <main>
+        
+        
+        <section class="file-upload-section">
+            <h2>Carga de Archivo</h2>
+            <p class="instruction">Seleccione un archivo Excel (.xlsx, .xls), CSV (.csv) o DBF (.dbf) para analizar.</p>
+            <div class="file-input-container">
+                <input type="file" id="fileInput" accept=".xlsx, .xls, .csv, .dbf" />
+                <label for="fileInput" class="file-label">Seleccionar Archivo</label>
+            </div>
+            <div id="file-name" class="file-name"></div>
+        </section>
+
+        <section class="column-selection-section" id="column-selection" style="display: none;">
+            <h2>Selección de Parámetros</h2>
+            <p class="instruction">Seleccione las columnas que contienen la información de fecha y hora.</p>
+            
+            <div class="form-parameters-row">
+                <div class="form-group date-time-group">
+                    <label for="dateColumn">Columna de Fecha Inicio:</label>
+                    <select id="dateColumn"></select>
+                    <small>Formato requerido: DD/MM/YYYY o DD-MM-YYYY (día/mes/año)</small>
+                </div>
+                
+                <div class="form-group date-time-group">
+                    <label for="timeColumn">Columna de Hora Inicio:</label>
+                    <select id="timeColumn"></select>
+                    <small>Formatos reconocidos: HH:MM:SS, HH:MM</small>
+                </div>
+            </div>
+            
+            <!-- Análisis Aorístico -->
+            <div class="aoristic-group">
+                <div class="checkbox-container">
+                    <input type="checkbox" id="enableAoristic">
+                    <label for="enableAoristic">Habilitar Análisis Aorístico. </label>&nbsp;&nbsp;
+                    <small>Análisis de probabilidades en rangos de tiempo</small>
+                </div>
+                
+                <div class="form-parameters-row aoristic-parameters" id="aoristicParameters">
+                    <div class="form-group date-time-group">
+                        <label for="endDateColumn">Columna de Fecha Fin:</label>
+                        <select id="endDateColumn" disabled></select>
+                        <small>Formato requerido: DD/MM/YYYY o DD-MM-YYYY</small>
+                    </div>
+                    
+                    <div class="form-group date-time-group">
+                        <label for="endTimeColumn">Columna de Hora Fin:</label>
+                        <select id="endTimeColumn" disabled></select>
+                        <small>Formatos reconocidos: HH:MM:SS, HH:MM</small>
+                    </div>
+                </div>
+                
+                <div class="form-parameters-row aoristic-parameters">
+                    <div class="form-group">
+                        <label for="locationColumn">Columna de Ubicación:</label>
+                        <select id="locationColumn" disabled></select>
+                        <small>Latitud/Longitud, Dirección o Barrio</small>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-parameters-row filter-parameters">
+                <div class="form-group filter-group">
+                    <div class="checkbox-container">
+                        <input type="checkbox" id="enablePartido">
+                        <label for="enablePartido">Filtrar por Partido</label>
+                    </div>
+                    <select id="partidoColumn" disabled></select>
+                    <select id="partidoValue" disabled></select>
+                </div>
+                
+                <div class="form-group filter-group">
+                    <div class="checkbox-container">
+                        <input type="checkbox" id="enableLocalidad">
+                        <label for="enableLocalidad">Filtrar por Localidad</label>
+                    </div>
+                    <select id="localidadColumn" disabled></select>
+                    <select id="localidadValue" disabled></select>
+                </div>
+
+                <!-- New Segment Filter -->
+                <div class="form-group filter-group">
+                    <div class="checkbox-container">
+                        <input type="checkbox" id="enableSegment">
+                        <label for="enableSegment">Filtrar por Segmento</label>
+                    </div>
+                    <select id="segmentColumn" disabled></select>
+                    <select id="segmentValue" disabled></select>
+                </div>
+            </div>
+        </section>
+
+        <section class="analysis-options-section" id="analysis-options" style="display: none;">
+            <h2>Opciones de Análisis</h2>
+            
+            <div class="cluster-options-row">
+                <div class="form-group cluster-count-container">
+                    <label for="clusterCount">Número de Clusters:</label>
+                    <input type="number" id="clusterCount" min="2" max="10" value="5">
+                </div>
+                
+                <div class="form-group">
+                    <div id="colorControls"></div>
+                </div>
+            </div>
+            
+            <button id="analyzeButton" class="btn primary">Generar Matriz de Eventos</button>
+        </section>
+
+        <section class="results-section" id="results" style="display: none;">
+            <h2>Resultados del Análisis</h2>
+            
+            <div class="matrix-container">
+                <h3 id="matrixTitle">Matriz de Conteo de Eventos</h3>
+                <div class="table-wrapper">
+                    <table id="eventMatrix"></table>
+                </div>
+                <div class="export-container">
+                    <button id="exportButton" class="btn export-btn" style="display: none;">Exportar a Excel</button>
+                    <button id="exportImageButton" class="btn export-btn image" style="display: none;">Exportar PNG</button>
+                </div>
+            </div>
+            
+            <div class="legend-container">
+                <div class="color-legend">
+                    <h3>Leyenda de Clusters</h3>
+                    <div id="colorLegend"></div>
+                </div>
+                
+                <div class="error-legend">
+                    <h3>Eventos No Contabilizados</h3>
+                    <div id="errorLegend"></div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Sección para el Análisis Aorístico -->
+        <section class="aoristic-results-section" id="aoristicResults" style="display: none;">
+            <div class="aoristic-section-header">
+                <h2>Resultados del Análisis Aorístico</h2>
+                <button id="aoristicGuideButton" class="btn guide-btn small-btn">Guía Aorístico</button>
+            </div>
+
+            <div class="aoristic-container">
+                <div class="aoristic-summary">
+                    <h3>Resumen del Análisis</h3>
+                    <div id="aoristicSummary"></div>
+                </div>
+                
+                <div class="aoristic-tabs">
+                    <button class="tab-btn active" data-tab="timePatterns">Patrones Temporales</button>
+                    <button class="tab-btn" data-tab="spatialPatterns">Patrones Espaciales</button>
+                    <button class="tab-btn" data-tab="combinedPatterns">Matriz Espacio-Temporal</button>
+                    <button class="tab-btn" data-tab="dayHourPatterns">Patrones Aorísticos Día-Hora</button>
+                </div>
+                
+                <div class="aoristic-tab-content">
+                    <!-- Patrones temporales -->
+                    <div class="tab-pane active" id="timePatterns">
+                        <div class="time-patterns-container">
+                            <div class="dataclock-chart-container">
+                                <h4>Distribución Horaria Ponderada</h4>
+                                <canvas id="dataClockProbability"></canvas>
+                            </div>
+                            <div class="time-patterns-classification">
+                                <h4>Clasificación de Patrones Temporales</h4>
+                                <div id="timeClassification"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Patrones espaciales -->
+                    <div class="tab-pane" id="spatialPatterns">
+                        <div class="spatial-patterns-container">
+                            <div class="spatial-chart-container">
+                                <h4>Distribución Espacial</h4>
+                                <div id="spatialChart"></div>
+                            </div>
+                            <div class="spatial-patterns-classification">
+                                <h4>Clasificación de Patrones Espaciales</h4>
+                                <div id="spatialClassification"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Matriz combinada espacio-temporal -->
+                    <div class="tab-pane" id="combinedPatterns">
+                        <div class="combined-matrix-container">
+                            <h4>Matriz Espacio-Temporal</h4>
+                            <table id="spatioTemporalMatrix" class="spatio-temporal-table"></table>
+                        </div>
+                    </div>
+                    
+                    <!-- Patrones Día-Hora -->
+                    <div class="tab-pane" id="dayHourPatterns">
+                        <div class="day-hour-patterns-container">
+                            <div id="dayHourMatrixContainer"></div>
+                            <button id="exportAoristicButton" class="btn export-btn image">Exportar PNG</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>2025 - Superintendencia de Análisis Criminal - Derechos reservados &copy;</p>
+        <p>La Plata, Buenos Aires, Argentina.</p>
+    </footer>
+
+    <div id="aoristicGuideDialog" class="dialog-overlay" style="display: none;">
+        <div class="dialog-container">
+            <h3>Guía de Análisis Aorístico</h3>
+            <div class="dialog-content" id="aoristicGuideContent">
+                <!-- El contenido de la guía se cargará aquí -->
+            </div>
+            <div class="dialog-buttons">
+                <button id="closeGuideDialogButton" class="btn dialog-btn cancel">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

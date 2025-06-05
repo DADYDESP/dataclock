@@ -1,0 +1,79 @@
+Guía de Usuario - Análisis Aorístico (Data Clock)
+
+Este documento describe el funcionamiento e interpretación de la herramienta de Análisis Aorístico integrada en Data Clock. El Análisis Aorístico permite analizar eventos que ocurrieron dentro de un *rango* de tiempo, ofreciendo una visión de probabilidades y patrones espaciales.
+
+## 1. Introducción
+
+El análisis aorístico es útil para identificar cuándo y dónde es más probable que ocurran eventos cuando solo se conoce un intervalo de tiempo (fecha y hora de inicio y fin), no un momento exacto. La herramienta procesa estos intervalos y calcula la probabilidad de ocurrencia en cada hora del día y en distintas ubicaciones, clasificando los patrones resultantes.
+
+## 2. Requisitos de Datos
+
+Para realizar el Análisis Aorístico, su archivo de datos debe contener las siguientes columnas:
+*   **Fecha Inicio:** Fecha en formato DD/MM/YYYY o DD-MM-YYYY.
+*   **Hora Inicio:** Hora en formato HH:MM:SS o HH:MM.
+*   **Fecha Fin:** Fecha en formato DD/MM/YYYY o DD-MM-YYYY.
+*   **Hora Fin:** Hora en formato HH:MM:SS o HH:MM.
+*   **Ubicación:** (Opcional) Columna que identifique la ubicación (ej. Barrio, Localidad, Dirección, Lat/Lon) para el análisis espacial.
+
+También puede aplicar los filtros de **Partido**, **Localidad** y **Segmento** definidos en la sección "Selección de Parámetros" para limitar el análisis a subconjuntos específicos de datos.
+
+## 3. Resultados del Análisis Aorístico
+
+Una vez ejecutado el análisis (marcando la opción "Habilitar Análisis Aorístico" y seleccionando las columnas correspondientes), los resultados se presentan en una sección dedicada con varias pestañas:
+
+### Pestaña: Resumen del Análisis
+
+Muestra una visión general de los patrones identificados:
+*   **Patrón Temporal:** Clasificación del patrón de probabilidad a lo largo de las 24 horas del día (Agudo, Enfocado, Difuso). Indica cuán concentrados o dispersos están los eventos en el tiempo.
+*   **Patrón Espacial:** Clasificación del patrón de probabilidad a lo largo de las ubicaciones (Punto Caliente, Agrupamiento, Dispersión). Indica cuán concentrados o dispersos están los eventos geográficamente.
+*   **Clasificación Combinada:** Cruce de los patrones temporal y espacial, resultando en un nivel de Prioridad Operativa (Muy Alta, Alta, Media, Baja).
+*   **Información General:** Cantidad de eventos analizados, no procesados, y las horas del día con mayor probabilidad ponderada.
+
+### Pestaña: Patrones Temporales
+
+Detalla el análisis de la distribución horaria:
+*   **Distribución Horaria Ponderada (Data Clock Aorístico):** Un gráfico de barras que muestra la probabilidad acumulada para cada hora del día. Las barras más altas indican horas de mayor probabilidad.
+*   **Clasificación de Patrones Temporales:** Explica la clasificación obtenida (Agudo, Enfocado, Difuso), incluyendo métricas como:
+    *   **Concentración:** Horas necesarias para acumular el 50% de la probabilidad total.
+    *   **Variación:** Coeficiente de variación, un indicador de cuán uniforme o desigual es la distribución.
+    *   Una descripción interpretativa del patrón.
+
+### Pestaña: Patrones Espaciales
+
+Detalla el análisis de la distribución geográfica:
+*   **Distribución Espacial:** Una tabla que lista las ubicaciones con mayor frecuencia de eventos (Top 10), mostrando su frecuencia y porcentaje. Ayuda a visualizar los puntos más relevantes.
+*   **Clasificación de Patrones Espaciales:** Explica la clasificación obtenida (Punto Caliente, Agrupamiento, Dispersión), incluyendo métricas como:
+    *   **Ubicaciones únicas:** Cantidad de ubicaciones diferentes registradas.
+    *   **Ubicación principal:** Porcentaje de eventos asociados a la ubicación más frecuente.
+    *   **Índice de dispersión:** Indicador de cuán dispersos están los eventos geográficamente.
+    *   Una descripción interpretativa del patrón.
+
+### Pestaña: Matriz Espacio-Temporal
+
+Presenta una matriz visual que combina los patrones temporales y espaciales para determinar la Prioridad Operativa.
+*   La matriz muestra las combinaciones posibles (ej. Agudo vs. Punto Caliente, Difuso vs. Dispersión).
+*   Cada celda tiene un color y un texto indicando el nivel de prioridad (Muy Alta a Baja).
+*   La celda marcada con un **★** indica la combinación de patrones y el nivel de prioridad detectado en sus datos.
+
+### Pestaña: Patrones Aorísticos Día-Hora
+
+Muestra las probabilidades y porcentajes distribuidos en una matriz completa de Días de la Semana por Horas del Día:
+*   **Matriz Aorística Día-Hora (Probabilidad):** Tabla con los días en las filas y las horas en las columnas. Cada celda muestra la probabilidad acumulada para ese intervalo día-hora. Las celdas están coloreadas según clusters de valores similares (definidos por K-Means), usando los colores seleccionados en la configuración principal. Incluye totales por día y por hora.
+    *   **Interacción:** Los títulos "Total" para filas (Días) y columnas (Horas) son clickables. Hacer clic en el "Total" de una fila genera un gráfico de barras con la distribución diaria. Hacer clic en el "Total" de una columna genera un gráfico radial con la distribución horaria. Estos gráficos aparecen en ventanas modales redimensionables.
+*   **Matriz Aorística Día-Hora (Porcentajes):** Similar a la matriz de Probabilidad, pero cada celda muestra el porcentaje que representa ese intervalo día-hora respecto al total de eventos analizados. Esta matriz tiene su propio clustering y leyenda de colores, alineada con los colores seleccionados. También incluye totales clickables para gráficos.
+*   **Leyendas de Matrices:** Debajo de cada matriz (Probabilidad y Porcentajes), se muestra una leyenda que explica los rangos de valores asociados a cada color de cluster. La leyenda de Porcentajes muestra los rangos en porcentaje con dos decimales.
+*   **Botón Exportar PNG:** Permite exportar las dos matrices mostradas y sus leyendas asociadas como una sola imagen PNG. La imagen se descarga y se copia automáticamente al portapapeles (si el navegador lo permite). Un mensaje "Copiado en Portapapeles" aparece al completar la acción.
+
+## 4. Interpretación General
+
+*   Las horas y los días coloreados con tonos más oscuros (según la leyenda) en las matrices Día-Hora son los intervalos donde la probabilidad de ocurrencia de eventos es mayor.
+*   Las clasificaciones "Agudo" / "Punto Caliente" y niveles de Prioridad "Muy Alta" o "Alta" sugieren concentración de eventos en tiempos y/o espacios específicos, indicando áreas y momentos de mayor riesgo que requieren atención focalizada.
+*   Las clasificaciones "Difuso" / "Dispersión" y niveles de Prioridad "Media" o "Baja" indican que los eventos están más distribuidos, lo que podría requerir estrategias de vigilancia más amplias.
+*   La "Confianza" en las clasificaciones indica cuán claramente se define el patrón en los datos.
+
+## 5. Limitaciones
+
+*   La calidad y cantidad de los datos de inicio y fin de intervalo son cruciales para la precisión del análisis aorístico.
+*   El análisis asume una distribución uniforme de la probabilidad dentro del intervalo reportado, lo cual puede no reflejar la realidad exacta.
+*   Las clasificaciones y prioridades son herramientas de apoyo. La interpretación final y la toma de decisiones deben considerar siempre el contexto específico y el conocimiento experto.
+
